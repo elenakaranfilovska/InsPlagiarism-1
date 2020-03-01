@@ -1,35 +1,36 @@
 from flask import Flask, request, jsonify, make_response
 from flask_restplus import Api, Resource, fields
-import scipy
-from absl import logging
 from sklearn.metrics.pairwise import cosine_similarity
 import logging
+import scipy
+from absl import logging
 
-import tensorflow as tf
-import tensorflow_hub as hub
-import matplotlib.pyplot as plt
 import numpy as np
+import tensorflow_hub as hub
+import seaborn as sns
+import tensorflow as tf
+import matplotlib.pyplot as plt
+
 import os
 import pandas as pd
-import re
 import seaborn as sns
 
-#STS Benchmark imports
-import pandas
-import scipy
-import math
-import csv
-from sklearn.externals import joblib
+# #STS Benchmark imports
+# import pandas
+# import scipy
+# import math
+# import csv
+# from sklearn.externals import joblib
 
 flask_app = Flask(__name__)
-app = Api(app = flask_app, 
-		  version = "1.0", 
-		  title = "ML React App", 
+app = Api(app = flask_app,
+		  version = "1.0",
+		  title = "ML React App",
 		  description = "Predict results using a trained model")
 
 name_space = app.namespace('prediction', description='Prediction APIs')
 
-model = app.model('Prediction params',
+inputModel = app.model('Prediction params',
 				  {'textField1': fields.String(required = True,
 				  							   description="Text Field 1",
     					  				 	   help="Text Field 1 cannot be blank"),
@@ -48,21 +49,17 @@ model = app.model('Prediction params',
 
 # classifier = joblib.load('classifier.joblib')
 
+#Model Loading
+module_url = "https://tfhub.dev/google/universal-sentence-encoder/4"
+		# @param ["https://tfhub.dev/google/universal-sentence-encoder/4",
+		# "https://tfhub.dev/google/universal-sentence-encoder-large/5"]
 
+model = hub.load(module_url)
 
 
 @name_space.route("/")
 class MainClass(Resource):
-
-	#######################################################
-	#print(request.json)
-
 	def embed(self, input):
-		module_url = "https://tfhub.dev/google/universal-sentence-encoder/4"
-		# @param ["https://tfhub.dev/google/universal-sentence-encoder/4",
-		# "https://tfhub.dev/google/universal-sentence-encoder-large/5"]
-
-		model = hub.load(module_url)
 		print("module %s loaded" % module_url)
 		return model(input)
 
@@ -83,8 +80,6 @@ class MainClass(Resource):
 		message_embeddings_ = self.embed(messages_)
 		self.plot_similarity(messages_, message_embeddings_, 90)
 
-	########################################################
-
 	def options(self):
 		response = make_response()
 		response.headers.add("Access-Control-Allow-Origin", "*")
@@ -92,10 +87,9 @@ class MainClass(Resource):
 		response.headers.add('Access-Control-Allow-Methods', "*")
 		return response
 
-	@app.expect(model)
+	@app.expect(inputModel)
 	def post(self):
 		try:
-
 			formData = request.json
 			text1 = formData.get('fileupload1')
 			text2 = formData.get('fileupload2')
@@ -104,18 +98,16 @@ class MainClass(Resource):
 			linesText1 = text1.split('\n')
 			for line in linesText1:
 				messages.append(line.rstrip())
-
 			print(messages)
+
 			linesText2 = text2.split('\n')
 			for line in linesText2:
 				messages1.append(line.rstrip())
 			print(messages1)
 
-
 			#data = [val for val in formData.values()]
 			# prediction = classifier.predict(data)
 			data = []
-			print("DATA[]")
 
 			# @title Compute a representation for each message, showing various lengths supported.
 			# word = "Plagiarisma"
@@ -124,22 +116,12 @@ class MainClass(Resource):
 			# 			 "Possible languages include English, Dutch, German, French, Spanish.")
 			# messages = [word, sentence, paragraph]
 
-			# word1 = "Elephant"
-			# sentence1 = "Best plagiarism detector for you."
-			# paragraph1 = (
-			# 	"English is a West Germanic language that was first spoken in early medieval England,"
-			# 	" eventually became a global lingua franca."
-			# 	"It is named after the Angles."
-			# )
-			# messages1 = [word1, sentence1, paragraph1]
-
 			# Reduce logging output.
 			#logging.set_verbosity(logging.ERROR)
-			print("Logging[]")
+
 			message_embeddings1 = self.embed(messages)
 			message_embeddings2 = self.embed(messages1)
 
-			print("message Embedings[]")
 			# Similarity matrix
 			similarity_matrix = cosine_similarity(message_embeddings1, message_embeddings2)
 			num_similar_sentences = 0
@@ -148,7 +130,7 @@ class MainClass(Resource):
 				for j in range(len(similarity_matrix[i])):
 					if similarity_matrix[i][j] > 0.90:
 						num_similar_sentences = num_similar_sentences + 1
-			print("Filtering []")
+
 			print(num_similar_sentences)
 			print(len(similarity_matrix))
 			if ((num_similar_sentences / len(similarity_matrix)) > 0.5):
