@@ -71,6 +71,15 @@ class App extends Component {
     this.setState({ result: "" });
   }
 
+  filterString = (str) =>{
+    str = str.replace(/\[/g, '');
+    str = str.replace(/\]/g, '');
+     str = str.replace(/\\/g, '');
+     str = str.replace(/,/g, '');
+     str = str.replace(/'/g, '');
+    return str;
+  }
+
 
   render() {
     const isLoading = this.state.isLoading;
@@ -120,7 +129,8 @@ class App extends Component {
           {result === "" ? null :
             (<Row>
               <Col className="result-container">
-                <h5 id="result">{result}</h5>
+
+                <h5 id="result">{this.filterString(result)}</h5>
               </Col>
             </Row>)
           }

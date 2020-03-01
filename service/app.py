@@ -133,10 +133,17 @@ class MainClass(Resource):
 
 			print(num_similar_sentences)
 			print(len(similarity_matrix))
-			if ((num_similar_sentences / len(similarity_matrix)) > 0.5):
+
+			ratio = (num_similar_sentences / len(similarity_matrix))
+			outputStr = "{0:.2f}".format(ratio *100)
+
+			if (ratio > 0.5):
 				data = ['PLAGIAT!']
 			else:
-				data = ['NOT PLAGIAT.']
+				data = ['Not Plagiat.']
+
+			data.append(outputStr)
+			data.append('%')
 
 			print(data)
 
