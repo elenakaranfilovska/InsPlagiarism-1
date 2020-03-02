@@ -128,7 +128,7 @@ class MainClass(Resource):
 
 			for i in range(len(similarity_matrix)):
 				for j in range(len(similarity_matrix[i])):
-					if similarity_matrix[i][j] > 0.90:
+					if similarity_matrix[i][j] > 0.80:
 						num_similar_sentences = num_similar_sentences + 1
 
 			print(num_similar_sentences)
@@ -142,8 +142,8 @@ class MainClass(Resource):
 			else:
 				data = ['Not Plagiat.']
 
-			data.append(outputStr)
-			data.append('%')
+			#data.append(outputStr)
+			#data.append('%')
 
 			print(data)
 
