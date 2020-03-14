@@ -44,10 +44,13 @@ class App extends Component {
     this.setState({
       formData
     });
+    //this.refs.name.innerHTML=this.state.formData[name];
   }
 
   handlePredictClick = (event) => {
     const formData = this.state.formData;
+    this.refs.text1.innerHTML=this.state.formData["fileupload1"];
+    this.refs.text2.innerHTML=this.state.formData["fileupload2"];
     this.setState({ isLoading: true });
     fetch('http://127.0.0.1:5000/prediction/',
       {
@@ -131,14 +134,29 @@ class App extends Component {
               <Col className="result-container">
 
                 <h5 id="result">{this.filterString(result)}</h5>
+                <a href="http://127.0.0.1:4999/heatmap" target="_blank">
+                  <img className="img-fluid mx-auto" src="http://127.0.0.1:4999/heatmap"></img>
+                </a>
+
               </Col>
             </Row>)
           }
         </div>
 
+        
+        {result === "" ? null : <h2>Text1</h2> }
+          <div id="text" ref="text1" className="text-dark">
+          </div>
+          <br/>
+          <br/>
+          {result === "" ? null : <h2>Text2</h2> }
+          <div id="text" ref="text2" className="text-dark">
+          </div>
       </Container>
     );
   }
 }
 
 export default App;
+
+

@@ -52,3 +52,8 @@ user-select: none;
 -webkit-user-select: none;
 -ms-user-select: none;
 }
+
+#text{
+  font-size: 1em;
+  text-align: justify;
+ }

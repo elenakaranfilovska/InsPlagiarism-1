@@ -30,22 +30,22 @@ app = Api(app = flask_app,
 
 name_space = app.namespace('prediction', description='Prediction APIs')
 
-inputModel = app.model('Prediction params',
-				  {'textField1': fields.String(required = True,
-				  							   description="Text Field 1",
-    					  				 	   help="Text Field 1 cannot be blank"),
-				  'textField2': fields.String(required = True,
-				  							   description="Text Field 2",
-    					  				 	   help="Text Field 2 cannot be blank"),
-				  'select1': fields.Integer(required = True,
-				  							description="Select 1",
-    					  				 	help="Select 1 cannot be blank"),
-				  'select2': fields.Integer(required = True,
-				  							description="Select 2",
-    					  				 	help="Select 2 cannot be blank"),
-				  'select3': fields.Integer(required = True,
-				  							description="Select 3",
-    					  				 	help="Select 3 cannot be blank")})
+#inputModel = app.model('Prediction params',
+#				  {'textField1': fields.String(required = True,
+#				  							   description="Text Field 1",
+ #   					  				 	   help="Text Field 1 cannot be blank"),
+#				  'textField2': fields.String(required = True,
+#				  							   description="Text Field 2",
+ #   					  				 	   help="Text Field 2 cannot be blank"),
+#				  'select1': fields.Integer(required = True,
+#				  							description="Select 1",
+ #   					  				 	help="Select 1 cannot be blank"),
+#				  'select2': fields.Integer(required = True,
+#				  							description="Select 2",
+ #   					  				 	help="Select 2 cannot be blank"),
+#				  'select3': fields.Integer(required = True,
+#				  							description="Select 3",
+ #   					  				 	help="Select 3 cannot be blank")})'''
 
 # classifier = joblib.load('classifier.joblib')
 
@@ -65,9 +65,13 @@ class MainClass(Resource):
 
 	def plot_similarity(self, labels, features, rotation):
 		corr = np.inner(features, features)
-		sns.set(font_scale=1.2)
+		sns.set(font_scale=1.0)
+		plt.figure(figsize=(16,9))
 		g = sns.heatmap(
 			corr,
+			annot=True,
+			fmt=".2%",
+			annot_kws={"size": 6},
 			xticklabels=labels,
 			yticklabels=labels,
 			vmin=0,
@@ -75,10 +79,22 @@ class MainClass(Resource):
 			cmap="YlOrRd")
 		g.set_xticklabels(labels, rotation=rotation)
 		g.set_title("Semantic Textual Similarity")
+		#g.set_size(20,15)
+		#fig = g.get_figure()
+		plt.savefig("static/img/output.png")
 
-	def run_and_plot(self, messages_):
-		message_embeddings_ = self.embed(messages_)
-		self.plot_similarity(messages_, message_embeddings_, 90)
+	def run_and_plot(self, messages1,messages2):
+		messages = []
+		for i in range(len(messages1)):
+			s = messages1[i]
+			messages.append(s[0:10] + "...[1." + str(i) + "]")
+		for i in range(len(messages2)):
+			s = messages2[i]
+			messages.append(s[0:10]+"...[2." + str(i) + "]")
+		plotingMessages = messages1+ messages2
+		message_embeddings_ = self.embed(plotingMessages)
+		print (messages)
+		self.plot_similarity(messages, message_embeddings_, 90)
 
 	def options(self):
 		response = make_response()
@@ -87,7 +103,7 @@ class MainClass(Resource):
 		response.headers.add('Access-Control-Allow-Methods', "*")
 		return response
 
-	@app.expect(inputModel)
+	#@app.expect(inputModel)
 	def post(self):
 		try:
 			formData = request.json
@@ -146,7 +162,10 @@ class MainClass(Resource):
 			#data.append('%')
 
 			print(data)
+			#Run Plot HeatMap
 
+			plotingMessages = messages + messages1
+			self.run_and_plot(messages,messages1)
 			response = jsonify({
 				"statusCode": 200,
 				"status": "Prediction made",
