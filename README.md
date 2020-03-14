@@ -21,3 +21,6 @@ pip install -r requirements.txt
 
 set FLASK_APP=app  
 flask run
+
+#Run Static File Server
+Run main of the staticServer.py
