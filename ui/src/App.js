@@ -7,6 +7,8 @@ import Row from 'react-bootstrap/Row';
 import Button from 'react-bootstrap/Button';
 import 'bootstrap/dist/css/bootstrap.css';
 
+import ReactHover from 'react-hover';
+
 class App extends Component {
 
   constructor(props) {
@@ -18,9 +20,18 @@ class App extends Component {
         fileupload1: '',
         fileupload2: '',
       },
-      result: ""
+      result: "",
+      maxSentencePercentPlagiat: "",
+      staticServerHeatMapUrl: "http://127.0.0.1:4999/heatmap",
+      options : {
+        followCursor:true,
+        shiftX: 20,
+        shiftY: 0
+      }
     };
   }
+
+ 
 
   handleChange = (event) => {
     const value = event.target.value;
@@ -47,10 +58,10 @@ class App extends Component {
     //this.refs.name.innerHTML=this.state.formData[name];
   }
 
+
   handlePredictClick = (event) => {
     const formData = this.state.formData;
-    this.refs.text1.innerHTML=this.state.formData["fileupload1"];
-    this.refs.text2.innerHTML=this.state.formData["fileupload2"];
+   
     this.setState({ isLoading: true });
     fetch('http://127.0.0.1:5000/prediction/',
       {
@@ -65,10 +76,12 @@ class App extends Component {
       .then(response => {
         this.setState({
           result: response.result,
+          maxSentencePercentPlagiat: response.maxSentencePercentPlagiat,
           isLoading: false
         });
       });
   }
+
 
   handleCancelClick = (event) => {
     this.setState({ result: "" });
@@ -82,12 +95,14 @@ class App extends Component {
      str = str.replace(/'/g, '');
     return str;
   }
+  
 
 
   render() {
     const isLoading = this.state.isLoading;
     const formData = this.state.formData;
     const result = this.state.result;
+    const maxSentencePercentPlagiat = this.state.maxSentencePercentPlagiat;
 
     return (
       <Container>
@@ -134,8 +149,9 @@ class App extends Component {
               <Col className="result-container">
 
                 <h5 id="result">{this.filterString(result)}</h5>
-                <a href="http://127.0.0.1:4999/heatmap" target="_blank">
-                  <img className="img-fluid mx-auto" src="http://127.0.0.1:4999/heatmap"></img>
+                <h5 id="result">{this.filterString(maxSentencePercentPlagiat)}</h5>
+                <a key={Math.random()} href={this.state.staticServerHeatMapUrl} target="_blank">
+                  <img key={Math.random()} className="img-fluid mx-auto" src={this.state.staticServerHeatMapUrl} disableCache="true"></img>
                 </a>
 
               </Col>
@@ -144,15 +160,33 @@ class App extends Component {
         </div>
 
         
-        {result === "" ? null : <h2>Text1</h2> }
-          <div id="text" ref="text1" className="text-dark">
-          </div>
+        {result === "" ? null :<div>
+        <h2>Text1</h2> 
+        {this.state.formData['fileupload1'].split("\n").map((value, index) => {
+            return <p>{value}</p>
+            })}
           <br/>
           <br/>
-          {result === "" ? null : <h2>Text2</h2> }
-          <div id="text" ref="text2" className="text-dark">
-          </div>
+        </div> }
+
+           
+          {result === "" ? null : <div><h2>Text2</h2> <h6 className="text-center">Hover on sentences to see percentage.</h6></div>}
+          <br/>
+          
+          {this.state.formData['fileupload2'].split("\n").map((value, index) => {
+
+            return <ReactHover options={this.state.options}>
+            <ReactHover.Trigger type='trigger'>
+            <div> {value} </div>
+            </ReactHover.Trigger>
+            <ReactHover.Hover type='hover'>
+            <h6> {this.filterString(maxSentencePercentPlagiat).split(" ")[index]} % </h6>
+            </ReactHover.Hover>
+            </ReactHover>
+            })}
+<br/><br/><br/>
       </Container>
+      
     );
   }
 }

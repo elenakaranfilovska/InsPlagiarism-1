@@ -1,3 +1,4 @@
+from comtypes.safearray import numpy
 from flask import Flask, request, jsonify, make_response
 from flask_restplus import Api, Resource, fields
 from sklearn.metrics.pairwise import cosine_similarity
@@ -59,12 +60,16 @@ model = hub.load(module_url)
 
 @name_space.route("/")
 class MainClass(Resource):
+
+	sentencePercentPlagiat= [[]]
+
 	def embed(self, input):
 		print("module %s loaded" % module_url)
 		return model(input)
 
 	def plot_similarity(self, labels, features, rotation):
 		corr = np.inner(features, features)
+		self.sentencePercentPlagiat = corr
 		sns.set(font_scale=1.0)
 		plt.figure(figsize=(16,9))
 		g = sns.heatmap(
@@ -147,6 +152,7 @@ class MainClass(Resource):
 					if similarity_matrix[i][j] > 0.80:
 						num_similar_sentences = num_similar_sentences + 1
 
+
 			print(num_similar_sentences)
 			print(len(similarity_matrix))
 
@@ -166,10 +172,26 @@ class MainClass(Resource):
 
 			plotingMessages = messages + messages1
 			self.run_and_plot(messages,messages1)
+
+			#Find Sentence Max Percent Plagiat
+			maxPercent = -100.00
+			maxSentencePercentPlagiat = []
+
+			for row in range(len(self.sentencePercentPlagiat)):
+				for cell in range(len(self.sentencePercentPlagiat[row])):
+					if row != cell:
+						if self.sentencePercentPlagiat[row][cell] > maxPercent:
+							maxPercent =self.sentencePercentPlagiat[row][cell]
+				maxSentencePercentPlagiat.append("{0:.2f}".format(maxPercent *100))
+				maxPercent = -100.00
+
+			print(maxSentencePercentPlagiat)
+
 			response = jsonify({
 				"statusCode": 200,
 				"status": "Prediction made",
-				"result": "Prediction: " + str(data)
+				"result": "Prediction: " + str(data),
+				"maxSentencePercentPlagiat": str(maxSentencePercentPlagiat)
 				})
 			response.headers.add('Access-Control-Allow-Origin', '*')
 			return response
