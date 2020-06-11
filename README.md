@@ -1,6 +1,8 @@
 # InsPlagiarism
 InsPlagiarism 
 
+Important: Python 3.6.2 (64 bit)  
+
 In the first terminal, go inside the ui folder using cd ui.
 
 yarn install  
