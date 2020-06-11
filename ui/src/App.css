@@ -1,7 +1,6 @@
 html, body {
  /*background: url('') center center no-repeat;*/
  /* background-size: cover;*/
-  color: white;
   height: 100%;
   width: 100%;
 }
@@ -56,4 +55,5 @@ user-select: none;
 #text{
   font-size: 1em;
   text-align: justify;
+  color: #000;
  }
