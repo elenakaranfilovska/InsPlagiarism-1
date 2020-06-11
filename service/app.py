@@ -1,4 +1,4 @@
-from comtypes.safearray import numpy
+
 from flask import Flask, request, jsonify, make_response
 from flask_restplus import Api, Resource, fields
 from sklearn.metrics.pairwise import cosine_similarity
